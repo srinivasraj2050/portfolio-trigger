@@ -1,0 +1,23 @@
+name: Portfolio Scanner Trigger
+
+on:
+  schedule:
+    - cron: '30 4 * * 1-5'   # 10:00 AM IST Mon-Fri (morning scan)
+    - cron: '30 10 * * 1-5'  # 4:00 PM IST Mon-Fri (evening recap)
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Morning Scan (10:00 AM IST)
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 4 * * 1-5'
+        run: |
+          curl -s -X POST             -H "Authorization: Bearer ${{ secrets.DISPATCH_TOKEN }}"             -H "Accept: application/vnd.github.v3+json"             -H "Content-Type: application/json"             -d '{"ref":"master"}'             https://api.github.com/repos/srinivasraj2050/portfolio-scanner/actions/workflows/morning_scan.yml/dispatches
+          echo "Morning scan triggered"
+
+      - name: Trigger Evening Recap (4:00 PM IST)
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 10 * * 1-5'
+        run: |
+          curl -s -X POST             -H "Authorization: Bearer ${{ secrets.DISPATCH_TOKEN }}"             -H "Accept: application/vnd.github.v3+json"             -H "Content-Type: application/json"             -d '{"ref":"master"}'             https://api.github.com/repos/srinivasraj2050/portfolio-scanner/actions/workflows/evening_recap.yml/dispatches
+          echo "Evening recap triggered"
